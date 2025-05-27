@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PARKING_ATTENDANT
+  
+  @@map(name: "role")
+}
+
+model User {
+  id                            String        @id @default(uuid())
+  firstName                     String
+  lastName                      String
+  email                         String        @unique
+  password                      String
+  role                          Role          @default(PARKING_ATTENDANT)
+  emailVerified                 Boolean       @default(false)
+  emailVerificationToken        String?
+  emailVerificationTokenExpires DateTime?
+  resetPasswordToken            String?
+  resetPasswordTokenExpires     DateTime?
+  createdAt                     DateTime      @default(now())
+  updatedAt                     DateTime      @updatedAt
+  parkingLotOrders              ParkingTicket[]
+
+
+  @@map("users")
+}
+
+model ParkingLot {
+  code                    String    @id @unique
+  parkingName             String
+  numberOfAvailableSpace  Int
+  location                String
+  feesPerHour             Float
+  parkingTickets          ParkingTicket[]
+  createdAt               DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  @@map("parking_lots")
+}
+
+model ParkingTicket {
+  id              String     @id @default(uuid())
+  plateNumber     String
+  entry_date      DateTime
+  exit_date       DateTime?
+  amount          Float
+  parking_code    String
+  parkingLot      ParkingLot @relation(fields: [parking_code], references: [code])
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  @@map("parking_tickets")
+  @@index([parking_code])
+  @@index([userId])
+}

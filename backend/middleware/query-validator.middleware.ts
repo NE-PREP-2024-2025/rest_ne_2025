@@ -1,0 +1,21 @@
+import { NextFunction, Request, Response } from "express";
+import ServerResponse from "../utils/ServerResponse";
+import { validate } from "class-validator";
+import { instanceToPlain, plainToInstance } from "class-transformer";
+export function queryValidationMiddleware<T>(type: any,skipMissingProperties = false
+): (req: Request, res: Response, next: NextFunction) => Promise<void> {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const dto = plainToInstance(type, req.query);
+    const errors = await validate(dto as object, { skipMissingProperties });
+    if (errors.length > 0) {
+      ServerResponse.error(
+        res,
+        Object.values(errors[0]?.constraints as {})[0] as string
+      );
+    } else {
+      next();
+    }
+  };
+}
+
+

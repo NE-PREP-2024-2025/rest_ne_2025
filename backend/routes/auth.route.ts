@@ -1,0 +1,13 @@
+import { Router } from "express";
+import { validationMiddleware } from "../middleware/validator.middleware";
+import { EmailDto, LoginDto, RegisterDto, ResetPasswordDto, VerifyEmailDto } from "../dtos/auth.dto";
+import AuthController from "../controllers/auth.controller";
+const router = Router();
+router.post("/login", [validationMiddleware(LoginDto)], AuthController.login);
+router.post("/register", [validationMiddleware(RegisterDto)], AuthController.registerUser);
+router.post("/send-reset-password-email",[validationMiddleware(EmailDto)], AuthController.requestPasswordReset);
+router.post("/reset-password/:token", [validationMiddleware(ResetPasswordDto)], AuthController.resetPassword);
+router.post("/verify-email/:token", [validationMiddleware(VerifyEmailDto)], AuthController.verifyEmail);
+router.post("/create-admin", [validationMiddleware(RegisterDto)], AuthController.createAdmin);
+router.post('/send-verification-email',[validationMiddleware(EmailDto)], AuthController.sendVerificationEmail);
+export default router;
